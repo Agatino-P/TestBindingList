@@ -56,7 +56,10 @@ namespace TestBindingList
 
         private void people_ItemPropertyChanged(IList SourceList, object Item, PropertyChangedEventArgs e)
         {
-            updateLog($"Change Event: {e.PropertyName}");
+            if (!(Item is Person person))
+                return;
+
+            updateLog($"Change Event:Person:{person.Name} Property:{e.PropertyName}");
         }
 
         private void people_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
