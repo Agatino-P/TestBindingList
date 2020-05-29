@@ -2,14 +2,16 @@
 using GalaSoft.MvvmLight.Command;
 using System;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Collections;
 
 namespace TestBindingList
 {
 
     public class MainWindowViewModel : ViewModelBase
     {
-        private BindingList<Person> _people = new BindingList<Person>();
-        public BindingList<Person> People { get => _people; set { Set(() => People, ref _people, value); } }
+        private ObservableCollectionEX<Person> _people = new ObservableCollectionEX<Person>();
+        public ObservableCollectionEX<Person> People { get => _people; set { Set(() => People, ref _people, value); } }
 
         private string _log; public string Log { get => _log; set { Set(() => Log, ref _log, value); } }
 
@@ -24,8 +26,8 @@ namespace TestBindingList
             foreach (Person person in People)
             {
                 person.Age++;
-                updateLog($"Name:{person.Name} New Age:{person.Age}");
-                break;
+                //updateLog($"Name:{person.Name} New Age:{person.Age}");
+                //break;
             }
         }
 
@@ -46,7 +48,21 @@ namespace TestBindingList
         public MainWindowViewModel()
         {
             loadSampleData();
-            People.ListChanged += people_ListChanged;
+            People.CollectionChanged += people_CollectionChanged;
+            People.ItemPropertyChanged += people_ItemPropertyChanged;
+            
+            //People.ListChanged += people_ListChanged;
+        }
+
+        private void people_ItemPropertyChanged(IList SourceList, object Item, PropertyChangedEventArgs e)
+        {
+            updateLog($"Change Event: {e.PropertyName}");
+        }
+
+        private void people_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            
+            updateLog($"Change Event: {e.Action}");
         }
 
         private void people_ListChanged(object sender, ListChangedEventArgs e)
@@ -60,9 +76,21 @@ namespace TestBindingList
 
         private void loadSampleData()
         {
-            People.Add(new Person("uno", 1));
-            People.Add(new Person("due", 2));
-            People.Add(new Person("tre", 3));
+            Person newPerson;
+            for (int i=0; i<3;i++)
+            {
+                newPerson = new Person($"Person-{i}", i);
+                //newPerson.PropertyChanged += newPerson_PropertyChanged;
+                People.Add(newPerson);
+            }
+        }
+
+        private void newPerson_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!(sender is Person person))
+                return;
+
+            updateLog($"Property Changed: Name:{person.Name} Age:{person.Age}");
         }
     }
 }
